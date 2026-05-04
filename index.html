@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- BASE:START (managed by Coding Agent — do not edit) -->
+<base href="/pmg-wallet-live-slideshow/">
+<!-- BASE:END -->
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+
+<!-- SEO Meta Tags -->
+<title>PayMeGPT — Wallet Passes</title>
+<meta property="og:title" content="PayMeGPT — Wallet Passes" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="PayMeGPT — Wallet Passes" />
+<!-- End SEO Meta Tags -->
+
+<script data-field-replace>
+(function(){
+  var params=new URLSearchParams(window.location.search);
+  var fields={};
+  var paramMap={
+    'first_name':'firstName','last_name':'lastName','full_name':'fullName',
+    'email':'email','phone':'phone','company':'company',
+    'city':'city','state':'state','country':'country'
+  };
+  var skipTags={'SCRIPT':1,'STYLE':1,'NOSCRIPT':1,'TEXTAREA':1,'CODE':1,'PRE':1};
+  var hasUrlFields=false;
+  for(var p in paramMap){
+    var v=params.get(p);
+    if(v){fields[paramMap[p]]=v;hasUrlFields=true;}
+  }
+  var contactId=params.get('contact_id');
+  function esc(s){
+    if(!s)return s;
+    var d=document.createElement('div');
+    d.appendChild(document.createTextNode(s));
+    return d.innerHTML;
+  }
+  function doReplace(data){
+    var r={};
+    r['{{full_name}}']=esc(((data.firstName||'')+' '+(data.lastName||'')).trim()||((data.fullName||data.name)||''));
+    r['{{first_name}}']=esc(data.firstName||(data.name?data.name.split(' ')[0]:'')||'');
+    r['{{last_name}}']=esc(data.lastName||(data.name&&data.name.indexOf(' ')>-1?data.name.substring(data.name.indexOf(' ')+1):'')||'');
+    r['{{email}}']=esc(data.email||'');
+    r['{{phone}}']=esc(data.phone||'');
+    r['{{company}}']=esc(data.company||'');
+    r['{{city}}']=esc(data.city||'');
+    r['{{state}}']=esc(data.state||'');
+    r['{{country}}']=esc(data.country||'');
+    r['{{date}}']=new Date().toLocaleDateString();
+    r['{{time}}']=new Date().toLocaleTimeString();
+    r['{{location}}']=[data.city,data.state,data.country].filter(Boolean).join(', ');
+    r['{{tracking_id}}']=esc(data.trackingId||'');
+    r['{{lastClickedProduct}}']=esc(data.lastClickedProduct||'');
+    r['{{lastProductClickDate}}']=esc(data.lastProductClickDate||'');
+    r['{{lastClickedProductPrice}}']=esc(data.lastClickedProductPrice||'');
+    r['{{lastClickedProductURL}}']=esc(data.lastClickedProductURL||'');
+    r['{{productsClickedCount}}']=esc(data.productsClickedCount||'0');
+    r['{{ip_address}}']=esc(data.ipAddress||'');
+    r['{{ip}}']=esc(data.ipAddress||'');
+    if(data.customFields){
+      for(var k in data.customFields){
+        r['{{'+k+'}}']=esc(String(data.customFields[k]||''));
+      }
+    }
+    params.forEach(function(v,k){
+      if(!paramMap[k]&&k!=='contact_id'&&k!=='page_id'&&k.indexOf('utm_')!==0){
+        r['{{'+k+'}}']=esc(v);
+      }
+    });
+    var hasValues=false;
+    for(var key in r){if(r[key]){hasValues=true;break;}}
+    if(!hasValues)return;
+    var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{
+      acceptNode:function(n){
+        var p=n.parentNode;
+        if(p&&skipTags[p.nodeName])return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var node;
+    while(node=walker.nextNode()){
+      var txt=node.nodeValue;
+      if(txt&&txt.indexOf('{{')>-1){
+        var changed=txt;
+        for(var ph in r){
+          if(r[ph]&&changed.indexOf(ph)>-1){
+            changed=changed.split(ph).join(r[ph]);
+          }
+        }
+        if(changed!==txt)node.nodeValue=changed;
+      }
+    }
+    var attrs=['value','placeholder','content','alt','title'];
+    attrs.forEach(function(attr){
+      var els=document.querySelectorAll('['+attr+'*="{{"]');
+      for(var i=0;i<els.length;i++){
+        var tag=els[i].tagName;
+        if(skipTags[tag])continue;
+        var val=els[i].getAttribute(attr);
+        if(val){
+          var nv=val;
+          for(var ph in r){
+            if(r[ph]&&nv.indexOf(ph)>-1){
+              nv=nv.split(ph).join(r[ph]);
+            }
+          }
+          if(nv!==val)els[i].setAttribute(attr,nv);
+        }
+      }
+    });
+  }
+  function run(){
+    if(contactId){
+      var xhr=new XMLHttpRequest();
+      xhr.open('GET','https://paymegpt.com/api/landing/context/'+encodeURIComponent(contactId)+'?page_id=3750');
+      xhr.onload=function(){
+        if(xhr.status===200){
+          try{
+            var resp=JSON.parse(xhr.responseText);
+            if(resp.success&&resp.contact){
+              var merged=resp.contact;
+              for(var k in fields){merged[k]=fields[k];}
+              doReplace(merged);
+              return;
+            }
+          }catch(e){}
+        }
+        if(hasUrlFields)doReplace(fields);
+      };
+      xhr.onerror=function(){if(hasUrlFields)doReplace(fields);};
+      xhr.send();
+    }else if(hasUrlFields){
+      doReplace(fields);
+    }
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',run);}
+  else{run();}
+})();
+</script>
+<script data-payment>
+(function(){
+  var slug='hXR4J46Qg';
+  var apiBase='https://paymegpt.com';
+  function findEmail(){
+    var ids=['email','emailAddress','buyer-email','buyerEmail','user-email','userEmail','checkout-email','customer-email','contact-email'];
+    for(var i=0;i<ids.length;i++){var el=document.getElementById(ids[i]);if(el&&el.value&&el.value.includes('@'))return el.value.trim();}
+    var inputs=document.querySelectorAll('input[type="email"],input[name*="email"],input[placeholder*="email"],input[placeholder*="Email"]');
+    for(var j=0;j<inputs.length;j++){if(inputs[j].value&&inputs[j].value.includes('@'))return inputs[j].value.trim();}
+    return '';
+  }
+  function findName(){
+    var ids=['name','fullName','full-name','buyer-name','buyerName','customer-name','userName','user-name'];
+    for(var i=0;i<ids.length;i++){var el=document.getElementById(ids[i]);if(el&&el.value)return el.value.trim();}
+    var inputs=document.querySelectorAll('input[name*="name"]:not([name*="email"]):not([type="email"]),input[placeholder*="name"]:not([placeholder*="email"]):not([type="email"]),input[placeholder*="Name"]:not([type="email"])');
+    for(var j=0;j<inputs.length;j++){if(inputs[j].value)return inputs[j].value.trim();}
+    return '';
+  }
+  var __realProcessPayment=function(a,b,c,d,e){
+    var amountCents,email,productName,productDescription,customerName,quantity;
+    if(a&&typeof a==='object'){
+      amountCents=a.amountCents;email=a.email;productName=a.productName;
+      productDescription=a.productDescription||'';customerName=a.name||'';quantity=a.quantity||1;
+    }else{
+      amountCents=typeof a==='number'?a:0;productName=typeof b==='string'?b:'';
+      productDescription=typeof c==='string'?c:'';email='';customerName='';quantity=1;
+    }
+    if(!email)email=findEmail();
+    if(!customerName)customerName=findName();
+    if(!productName){alert('Product name is required.');return Promise.reject('no_product_name');}
+    if(!amountCents||amountCents<100){alert('Amount must be at least $1.00');return Promise.reject('invalid_amount');}
+    if(!email){alert('Please enter your email address.');return Promise.reject('no_email');}
+    var successBase=window.location.href.split('?')[0];
+    return fetch(apiBase+'/api/landing-pages/public/'+slug+'/payment/checkout',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:email,name:customerName,amountCents:amountCents,productName:productName,productDescription:productDescription,quantity:quantity,successUrl:successBase+'?payment=success&product='+encodeURIComponent(productName)+'&session_id={CHECKOUT_SESSION_ID}',cancelUrl:successBase+'?payment=cancelled'})
+    }).then(function(r){return r.json();}).then(function(d){
+      if(d.checkoutUrl){window.location.href=d.checkoutUrl;}
+      else{alert(d.error||'Failed to process payment');throw new Error(d.error);}
+    });
+  };
+  Object.defineProperty(window,'__processPayment',{value:__realProcessPayment,writable:false,configurable:false});
+  document.addEventListener('DOMContentLoaded',function(){
+    var urlParams=new URLSearchParams(window.location.search);
+    if(urlParams.get('payment')==='success'){
+      var pName=urlParams.get('product')||'your item';
+      var overlay=document.createElement('div');overlay.id='payment-success-overlay';
+      overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999999;font-family:system-ui,-apple-system,sans-serif;';
+      overlay.innerHTML='<div style="background:white;border-radius:16px;padding:40px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.15);"><div style="width:64px;height:64px;border-radius:50%;background:#dcfce7;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div><h2 style="margin:0 0 12px;font-size:24px;font-weight:700;color:#111827;">Payment Successful!</h2><p style="margin:0 0 24px;color:#6b7280;font-size:16px;">Thank you for purchasing '+pName.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'.</p><button onclick="document.getElementById(\'payment-success-overlay\').remove();window.history.replaceState({},\'\',window.location.pathname);" style="padding:12px 32px;font-size:16px;font-weight:600;background:#16a34a;color:white;border:none;border-radius:8px;cursor:pointer;">Continue</button></div>';
+      document.body.appendChild(overlay);
+    }
+  });
+})();
+</script>  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M3.5 2H8a3 3 0 0 1 0 6H3.5V2Z" fill="#0a0a0a"/>
+        <path d="M3.5 8v4" stroke="#0a0a0a" stroke-width="1.7" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-name">PayMeGPT</span>
+  </div>
+  <div id="ctr">01 / 08</div>
+</div>
+
+<div id="deck">
+
+  <div class="slide active">
+    <div class="live"><div class="ld"></div>Live Tonight</div>
+    <p class="eyebrow">PayMeGPT Platform</p>
+    <h1 class="h1">The AI Operating System<br />That <span class="ac">Pays</span></h1>
+    <hr class="rule" />
+    <p class="body">Flow Builder · Wallet Passes · Automations · MCP Integration.<br />Built for agencies and white labels.</p>
+    <div class="pills">
+      <span class="pill">Wallet Passes</span>
+      <span class="pill">60+ MCP Tools</span>
+      <span class="pill">White Label Ready</span>
+    </div>
+  </div>
+
+  <div class="slide">
+    <p class="eyebrow">The Platform</p>
+    <h2 class="h2">Not just a chatbot builder.<br /><span class="ac">An AI OS.</span></h2>
+    <hr class="rule" />
+    <div class="grid g3">
+      <div class="card">
+        <div class="ci">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <circle cx="7.5" cy="6" r="3" stroke="#36D6B5" stroke-width="1.3"/>
+            <path d="M1.5 14c0-2.485 2.686-4.5 6-4.5s6 2.015 6 4.5" stroke="#36D6B5" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="ct">AI Agents</div>
+        <div class="cb">Smart agents that act across every channel — SMS, email, Instagram, WhatsApp, and more.</div>
+      </div>
+      <div class="card">
+        <div class="ci">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <circle cx="3" cy="7.5" r="1.5" stroke="#36D6B5" stroke-width="1.3"/>
+            <circle cx="12" cy="4" r="1.5" stroke="#36D6B5" stroke-width="1.3"/>
+            <circle cx="12" cy="11" r="1.5" stroke="#36D6B5" stroke-width="1.3"/>
+            <path d="M4.5 7.5H8.5a1 1 0 0 0 1-1V5.5M9.5 9.5V11a1 1 0 0 1-1 1H4.5" stroke="#36D6B5" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="ct">Visual Flow Builder</div>
+        <div class="cb">Drag-and-drop automation canvas with AI generation. Build complex flows in minutes.</div>
+      </div>
+      <div class="card">
+        <div class="ci">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M5.5 2v3.5M9.5 2v3.5" stroke="#36D6B5" stroke-width="1.3" stroke-linecap="round"/>
+            <rect x="3" y="5.5" width="9" height="4" rx="1" stroke="#36D6B5" stroke-width="1.3"/>
+            <path d="M7.5 9.5V13" stroke="#36D6B5" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="ct">MCP Integration</div>
+        <div class="cb">60+ tools via Model Context Protocol. Claude and any AI can control your platform natively.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="split">
+      <div class="stxt">
+        <p class="eyebrow">New Feature</p>
+        <h2 class="h2l">Wallet<br /><span class="ac">Passes</span></h2>
+        <hr class="rule rulel" />
+        <p class="bodyl">Issue Apple Wallet and Google Wallet passes directly from your flows. Customers tap to add — updates push to their phone automatically.</p>
+        <ul class="flist">
+          <li><span class="ck"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#36D6B5" stroke-width="1.2"/><path d="M4 6.5l2 2 3-3" stroke="#36D6B5" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Punch Card — reward every visit</li>
+          <li><span class="ck"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#36D6B5" stroke-width="1.2"/><path d="M4 6.5l2 2 3-3" stroke="#36D6B5" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Points Loyalty — gamify spending</li>
+          <li><span class="ck"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#36D6B5" stroke-width="1.2"/><path d="M4 6.5l2 2 3-3" stroke="#36D6B5" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Membership Card — VIP access</li>
+          <li><span class="ck"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#36D6B5" stroke-width="1.2"/><path d="M4 6.5l2 2 3-3" stroke="#36D6B5" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Coupon, Event Ticket, Prepaid Balance</li>
+        </ul>
+      </div>
+      <div class="wcard">
+        <div class="wh">
+          <div class="wlogo">
+            <div class="wicon">
+              <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                <path d="M3.5 2H8a3 3 0 0 1 0 6H3.5V2Z" fill="#0a0a0a"/>
+                <path d="M3.5 8v4" stroke="#0a0a0a" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <span class="wbrand">PayMeGPT</span>
+          </div>
+          <div class="wprog"><span>Program</span><strong>Punchy</strong></div>
+        </div>
+        <div class="wmain">Free Drink</div>
+        <div class="wsub">Reward Ready</div>
+        <div class="wmeta">
+          <div><label>Member</label><span>Nolan</span></div>
+          <div><label>Reward</label><span>Ready to redeem</span></div>
+        </div>
+        <div class="wqr">
+          <svg width="50" height="50" viewBox="0 0 50 50" fill="#111">
+            <rect width="20" height="20" rx="2" fill="#111"/>
+            <rect x="30" width="20" height="20" rx="2" fill="#111"/>
+            <rect y="30" width="20" height="20" rx="2" fill="#111"/>
+            <rect x="3" y="3" width="14" height="14" rx="1" fill="white"/>
+            <rect x="33" y="3" width="14" height="14" rx="1" fill="white"/>
+            <rect x="3" y="33" width="14" height="14" rx="1" fill="white"/>
+            <rect x="30" y="30" width="8" height="8" rx="1" fill="#111"/>
+            <rect x="40" y="30" width="8" height="8" rx="1" fill="#111"/>
+            <rect x="30" y="40" width="8" height="8" rx="1" fill="#111"/>
+            <rect x="40" y="40" width="8" height="8" rx="1" fill="white"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <p class="eyebrow">The Flow Builder</p>
+    <h2 class="h2">Automate every<br /><span class="ac">wallet touchpoint</span></h2>
+    <hr class="rule" />
+    <p class="body">Connect wallet actions to any trigger — QR scan, form submit, keyword, purchase — with zero code.</p>
+    <div class="frow">
+      <div class="fn t">Customer Scans QR</div>
+      <div class="fa"><svg width="14" height="8" viewBox="0 0 14 8" fill="none"><path d="M0 4h12M8 1l4 3-4 3" stroke="#444" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="fn">Wallet: Add Punch</div>
+      <div class="fa"><svg width="14" height="8" viewBox="0 0 14 8" fill="none"><path d="M0 4h12M8 1l4 3-4 3" stroke="#444" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="fn">Send SMS</div>
+      <div class="fa"><svg width="14" height="8" viewBox="0 0 14 8" fill="none"><path d="M0 4h12M8 1l4 3-4 3" stroke="#444" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="fn">Push Notification</div>
+      <div class="fa"><svg width="14" height="8" viewBox="0 0 14 8" fill="none"><path d="M0 4h12M8 1l4 3-4 3" stroke="#444" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="fn">Sheets Log</div>
+    </div>
+    <div class="frow" style="margin-top:10px">
+      <div class="fn t">10 Punches Reached</div>
+      <div class="fa"><svg width="14" height="8" viewBox="0 0 14 8" fill="none"><path d="M0 4h12M8 1l4 3-4 3" stroke="#444" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="fn">Wallet: Reward Ready</div>
+      <div class="fa"><svg width="14" height="8" viewBox="0 0 14 8" fill="none"><path d="M0 4h12M8 1l4 3-4 3" stroke="#444" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="fn">Send Email</div>
+      <div class="fa"><svg width="14" height="8" viewBox="0 0 14 8" fill="none"><path d="M0 4h12M8 1l4 3-4 3" stroke="#444" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="fn">Internal SMS Alert</div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <p class="eyebrow">What Sets Us Apart</p>
+    <h2 class="h2">Built for agencies.<br /><span class="ac">Made to white label.</span></h2>
+    <hr class="rule" />
+    <div class="grid g2" style="max-width:740px">
+      <div class="card">
+        <div class="ci">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <rect x="2" y="4" width="11" height="8" rx="1.5" stroke="#36D6B5" stroke-width="1.3"/>
+            <path d="M5 4V3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1" stroke="#36D6B5" stroke-width="1.3"/>
+            <path d="M7.5 8v.5" stroke="#36D6B5" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="ct">Full White Label</div>
+        <div class="cb">Your brand. Your domain. Your pricing. Resell the entire platform as your own product.</div>
+      </div>
+      <div class="card">
+        <div class="ci">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <circle cx="4" cy="7.5" r="2" stroke="#36D6B5" stroke-width="1.3"/>
+            <circle cx="11" cy="3.5" r="2" stroke="#36D6B5" stroke-width="1.3"/>
+            <circle cx="11" cy="11.5" r="2" stroke="#36D6B5" stroke-width="1.3"/>
+            <path d="M6 6.8l3.5-2M6 8.2l3.5 2" stroke="#36D6B5" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="ct">MCP — AI Can Control It</div>
+        <div class="cb">Claude and any LLM can run flows, issue wallet passes, and post to social via MCP natively.</div>
+      </div>
+      <div class="card">
+        <div class="ci">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <path d="M1.5 7.5h3l2-5 2 10 2-5h3" stroke="#36D6B5" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="ct">Automation Triggers</div>
+        <div class="cb">Sheet rows, form submits, keywords, QR scans, wallet events — anything can start a flow.</div>
+      </div>
+      <div class="card">
+        <div class="ci">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="#36D6B5" stroke-width="1.3"/>
+            <rect x="8.5" y="1.5" width="5" height="5" rx="1" stroke="#36D6B5" stroke-width="1.3"/>
+            <rect x="1.5" y="8.5" width="5" height="5" rx="1" stroke="#36D6B5" stroke-width="1.3"/>
+            <rect x="8.5" y="8.5" width="5" height="5" rx="1" stroke="#36D6B5" stroke-width="1.3"/>
+          </svg>
+        </div>
+        <div class="ct">Omnichannel Native</div>
+        <div class="cb">SMS, email, Instagram, WhatsApp, Messenger, Telegram, TikTok, Discord — one platform.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <p class="eyebrow">Tonight's Special Guest</p>
+    <h2 class="h2" style="margin-bottom:clamp(22px,3.5vw,36px)">Meet the <span class="ac">Wallet Pass Master</span></h2>
+    <div class="scard">
+      <div class="savatar">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <circle cx="14" cy="11" r="5.5" stroke="#36D6B5" stroke-width="1.5"/>
+          <path d="M3 26c0-5.523 4.925-9 11-9s11 3.477 11 9" stroke="#36D6B5" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="sname">Danny Monzon</div>
+        <div class="srole">CBB Pro · PayMeGPT Wallet Pass Master</div>
+        <div class="sbio">A ChatbotBuilder.ai Pro who's diving deep into PayMeGPT's wallet pass system. Danny is our guest expert tonight — sharing real-world use cases, live demos, and how he's already putting the wallet feature to work for clients.</div>
+        <div class="pills" style="justify-content:flex-start;margin-top:14px">
+          <span class="pill">CBB Nation</span>
+          <span class="pill">PMG Fam</span>
+          <span class="pill">Wallet Expert</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide">
+    <p class="eyebrow">By the Numbers</p>
+    <h2 class="h2">The AI OS that<br /><span class="ac">does the work</span></h2>
+    <hr class="rule" />
+    <div class="srow">
+      <div style="text-align:center"><div class="sv">60<span class="ac">+</span></div><div class="sl">MCP Tools</div></div>
+      <div style="text-align:center"><div class="sv">7</div><div class="sl">Wallet Pass Types</div></div>
+      <div style="text-align:center"><div class="sv">10<span class="ac">+</span></div><div class="sl">Channels</div></div>
+      <div style="text-align:center"><div class="sv"><span class="ac">&#8734;</span></div><div class="sl">Automations</div></div>
+    </div>
+    <div class="pills">
+      <span class="pill">Punch Cards</span>
+      <span class="pill">Points Loyalty</span>
+      <span class="pill">Coupons</span>
+      <span class="pill">Event Tickets</span>
+      <span class="pill">Memberships</span>
+      <span class="pill">Business Cards</span>
+      <span class="pill">Prepaid Balance</span>
+    </div>
+  </div>
+
+  <div class="slide">
+    <p class="eyebrow">Get Started</p>
+    <h1 class="h1">Prompts<br /><span class="ac">into profits</span></h1>
+    <hr class="rule" />
+    <p class="body">PayMeGPT is the AI operating system for agencies, white labels, and operators building real, revenue-generating AI businesses.</p>
+    <a class="btn" href="https://paymegpt.com" target="_blank">
+      Start free at paymegpt.com
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M8 3l3 3.5-3 3" stroke="#0a0a0a" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <div class="pills">
+      <span class="pill">White Label</span>
+      <span class="pill">No Code</span>
+      <span class="pill">MCP Ready</span>
+      <span class="pill">Wallet Passes</span>
+    </div>
+  </div>
+
+</div>
+
+<div id="nav">
+  <button class="nbtn" id="prev">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2.5L4 6.5l4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div id="dots" style="display:flex;gap:6px;align-items:center"></div>
+  <button class="nbtn" id="next">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+</div>
+
+
+  <script src="script.js"></script>
+</body>
+</html>
