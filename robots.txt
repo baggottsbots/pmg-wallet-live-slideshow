@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://baggottsbots.github.io/pmg-wallet-live-slideshow/sitemap.xml
